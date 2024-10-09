@@ -1,0 +1,7 @@
+backup1
+source.txt
+secrets
+venv
+__pycache__
+
+instance/test.db

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+	<a href="/do_something">Do something</a>
+	<form action="/" method="POST">
+        <input type="text" name="box" id="box", value="box">
+        <input type="text" name="temp" id="temp", value="{{random()}}">
+        <input type="text" name="humid" id="humid", value="{{random()}}">
+        <input type="text" name="light" id="light", value="{{random()}}">
+        <input type="text" name="soil" id="soil", value="{{random()}}">
+        <input type="submit" value="Add Task">
+    </form>
+	<img src="{{plot_url}}" alt="Chart cannot be displayed">
+    {% for box in boxes%}
+	<table><thead>
+	  <tr>
+		<td rowspan="6">Box {{box.box}}</td>
+		<td>temperature{{box.temperature}}</td>
+		<td>humidity{{box.humidity}}</td>
+		<td>soil{{box.soil}}</td>
+		<td>light{{box.light}}</td>
+		<td>input</td>
+		<td>button</td>
+	  </tr>
+	  {% for sensor in box.sensors%}
+	  <tr>
+		<td>{{sensor.name}}</td>
+		<td>{{sensor.graph}}</td>
+		<td><input type="warning value" id="idk" name="idk"></td>
+		<td><button type="button">Submit</button></td>
+	  </tr>{% endfor %}
+	  </thead>
+	</table>
+    {% endfor %}
+</body>
+</html>
