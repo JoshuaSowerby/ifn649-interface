@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from sqlalchemy import func
+from datetime import datetime, timedelta
 
 
 import matplotlib.pyplot as plt 
-import os 
+import matplotlib.dates as mdates
 import numpy as np 
 import matplotlib 
 matplotlib.use('Agg')
@@ -29,7 +30,7 @@ class Data(db.Model):
     
 
     def __repr__(self):
-        return f'<Data {self.box}, {self.timestamp}>'
+        return f'<Box {self.box}@{self.timestamp}>'
 
 
 ####how to call function using jinja
@@ -41,73 +42,102 @@ app.jinja_env.globals.update(random=random)
 ###
 
 
+
+####################################
+####################################
+####################################
+#have to use with context for this to run... this is probably bad
+def generate_graphs(lower_xlim):#should change this default...
+    boxes_query=Data.query.with_entities(Data.box).order_by(Data.box).distinct().all()
+    boxes=[i[0] for i in boxes_query]
+    graphs=[]
+    for box_num in boxes:
+            box_num_query=Data.query.where(Data.box==box_num).order_by(Data.timestamp).all()#...#all where box = box_num
+
+            sensors={'temperature':[],'humidity':[],'light':[],'soil':[]}
+            time=[]
+            for instances in box_num_query:
+                time+=[instances.timestamp]
+                sensors['temperature']+=[instances.temperature]
+                sensors['humidity']+=[instances.humidity]
+                sensors['soil']+=[instances.soil]
+                sensors['light']+=[instances.light]
+
+            box_graphs={}
+            for sensor in sensors.keys():
+                plt.figure(figsize=(5, 1))#must go first
+
+                plt.plot(time,sensors[sensor])
+                #plt.xlim(),plt.xlabel(),plt.ylabel(), plt.title()#rewrite to use figure so we can change the size
+                
+                #how to only set lower limit for xlim
+                current_xlim=plt.gca().get_xlim()
+                plt.gca().set_xlim([lower_xlim, current_xlim[1]])#don't know if this is working...
+                #formatting x axis
+                plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H'))
+                #plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=1))#don't use this on vely long timeframes, it takes forever
+
+                plt_name=f'static/graphs/{box_num}_{sensor}.png'
+                plt.savefig(plt_name)
+                plt.close()
+                box_graphs[sensor]=plt_name
+            graphs+=[box_graphs]
+    return graphs
+
+
+'''#Todo
+#use this in another file to input data...
+from app import *
+with app.app_context:
+    new_datum = Data(box=box, temperature=temp,humidity=humid,light=light,soil=soil)
+    try:
+        db.session.add(new_datum)
+        db.session.commit()
+    except:
+        print("error committing")
+
+##change the warning value inputs to use MQTT
+def publish():
+    #see teensy1-output publisher.py
+app.jinja_env.globals.update(publish=publish)
+ '''       
+####################################
+####################################
+####################################
+
+####still need to finish html, only temp is done
+@app.route('/update_warning/<int:box>/<string:sensor>',methods=['POST', 'GET'])
+def update_warning(box,sensor):
+    limit = request.form[sensor]
+    print(box,sensor,limit)
+    #send MQTT to topic f'{box}/{sensor}/{limit}' etc
+    return redirect('/')
+
 def create_plt(y,x):
     plt.plot(y,x)
     return plt
+
+graph_xlim=datetime.now()-timedelta(hours=1)##this is a bad way of dealing wiht this, you should use session (cookie)
+@app.route('/regen_graph/<int:xlim>')
+def regen_graph(xlim):
+    global graph_xlim
+    if xlim == 0:       
+        graph_xlim= datetime.now()-timedelta(hours=1)
+    elif xlim==1:
+        graph_xlim = datetime.now()-timedelta(hours=6)
+    elif xlim==2:
+        graph_xlim = datetime.now()-timedelta(hours=12)
+    elif xlim==3:
+        graph_xlim = datetime.now()-timedelta(hours=24)
+
+    
+    return redirect('/')
+    
+
 @app.route('/', methods=['POST', 'GET'])
 def test():
-    boxes = Data.query.order_by(Data.timestamp).all()
-    time_axis=[]
-    temp_axis=[]
-    humid_axis=[]
-    for box in boxes:
-        time_axis+=[box.timestamp]
-        temp_axis+=[box.temperature]
-        humid_axis+=[box.humidity]
-    '''#finish to create graphs... should also add something to choose timeframe...
-    graphs=[]
-    for box_num in boxes:
-        box_num_query=...#all where box = box_num
-        sensors={'temperature':[],'humidity':[],'light':[],'soil':[]}
-        for instances in box_num_query:
-            time+=instances.timestamp
-            sensors['temperature']+=[instances.temperature]
-            sensors['humidity']+=[instances.humidity]
-            sensors['light']+=[instances.light]
-            sensors['soil']+=[instances.soil]
-
-        for sensor in sensors.keys():
-            graph=f'static/box{box_num}_{sensor}.png'
-            graphs+=[graph]
-
-            plt.plot(time, sensors[sensor])
-            #have plt.xlim here etc, have them set using global variable that we change through button press
-            plt.savefig(graph)
-            plt.close()
-    '''
-    """
-    {% for box,graph in items%}
-	<table><thead>
-	  <tr>
-		<td rowspan="6">Box {{box.box}}</td>
-		<td> {{graph.temperature}} temperature {{box.temperature}} </td>
-		<td> {{graph.humidity}} humidity {{box.humidity}} </td>
-		<td> {{graph.soil}} soil {{box.soil}} </td>
-		<td> {{graph.light}} light {{box.light}} </td>
-		<td>input</td>
-		<td>button</td>
-	  </tr>
-	  </thead>
-	</table>
-    {% endfor %}
-    """
+    last_record=db.session.query(Data.box, Data.temperature, Data.humidity, Data.light, Data.soil, func.max(Data.timestamp)).group_by(Data.box).all()
     
-    """
-    plt.plot(time_axis, temp_axis)
-    #plt.plot(years, desired_growth)
-    plt.title("test")
-    plt.xlabel("time")
-    plt.ylabel("temperature")
-    #plt.legend(["Actual growth", "Desired growth"])
-    plt.savefig('static/my_plot.png')
-    """
-    plot=create_plt(time_axis,temp_axis)
-    plot.savefig(os.path.join('static','plot.png'))
-    plot.close()
-    #####example of how to prevent leakage
-    plt.plot(time_axis,humid_axis)
-    plt.close()
-    ####
     if request.method =='POST':
         #logic to add data
         #if any blank do not acccept?
@@ -127,7 +157,7 @@ def test():
     else:
         boxes = Data.query.order_by(Data.timestamp).all()
         print(boxes)
-        return render_template('test.html', boxes = boxes, plot_url='static/plot.png')
+        return render_template('index.html', items=zip(last_record, generate_graphs(graph_xlim)))
 
 @app.route('/do_something')
 def do_something():

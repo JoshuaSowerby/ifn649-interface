@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+	<a href="/do_something">Do something</a>
+	<a href='/regen_graph/0'>1hr</a>
+	<a href='/regen_graph/1'>6hrs</a>
+	<a href='/regen_graph/2'>12hrs</a>
+	<a href='/regen_graph/3'>24hrs</a>
+
+
+	<form action="/" method="POST">
+        <input type="text" name="box" id="box", value="box">
+        <input type="text" name="temp" id="temp", value="{{random()}}">
+        <input type="text" name="humid" id="humid", value="{{random()}}">
+        <input type="text" name="light" id="light", value="{{random()}}">
+        <input type="text" name="soil" id="soil", value="{{random()}}">
+        <input type="submit">
+    </form>
+	<img src="{{plot_url}}" alt="Chart cannot be displayed">
+    {% for box, graph in items%}
+	<table><thead>
+	  <tr>
+		<td rowspan="6">Box {{box.box}}</td>
+		<td>last value</td>
+		<td>graph</td>
+		<td>warning value</td>
+		<td colspan="2">button</td>
+	  </tr>
+
+	  <tr>
+		<td>Temperature</td>
+		<td><img src='{{graph["temperature"]}}' alt="Graph cannot be displayed"></td>
+		<td>{{box.temperature}}</td>
+		<td><form action='/update_warning/{{box.box}}/temperature' method="POST">
+			<input type="text" name="temperature" id="temperature" value="{{random()}}">
+			<input type="submit">
+		</form></td>
+	  </tr>
+
+	  <tr>
+		<td>Humidity</td>
+		<td><img src='{{graph["humidity"]}}' alt="Graph cannot be displayed"></td>
+		<td>{{box.humidity}}</td>
+		<td><form>
+			<input type="text" name="" id="", value="{{random()}}">
+			<input type="submit">
+		</form></td>
+	  </tr>
+
+	  <tr>
+		<td>Soil moisture</td>
+		<td><img src='{{graph["soil"]}}' alt="Graph cannot be displayed"></td>
+		<td>{{box.soil}}</td>
+		<td><form>
+			<input type="text" name="" id="", value="{{random()}}">
+			<input type="submit">
+		</form></td>
+	  </tr>
+
+	  <tr>
+		<td>Light level</td>
+		<td><img src='{{graph["light"]}}' alt="Graph cannot be displayed"></td>
+		<td>{{box.light}}</td>
+		<td><form>
+			<input type="text" name="" id="", value="{{random()}}">
+			<input type="submit">
+		</form></td>
+	  </tr>
+	  </thead>
+	</table>
+    {% endfor %}
+</body>
+</html>
