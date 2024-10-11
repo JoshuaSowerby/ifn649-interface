@@ -167,8 +167,12 @@ def do_something():
 
 if __name__ == "__main__":
     app.run(debug=True)
+    #app.run(host='192.168.0.108',port=5000,debug=True)
+    #ipconfig to find ip
+    #to connect, use 192.168.0.108:5000
 
 
 '''
 How would I make a button call some python script?
+probaby like the do_something route
 '''
