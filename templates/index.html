@@ -46,8 +46,8 @@
 		<td>Humidity</td>
 		<td><img src='{{graph["humidity"]}}' alt="Graph cannot be displayed"></td>
 		<td>{{box.humidity}}</td>
-		<td><form>
-			<input type="text" name="" id="", value="{{random()}}">
+		<td><form action='/update_warning/{{box.box}}/humidity' method="POST">
+			<input type="text" name="humidity" id="humidity" value="{{random()}}">
 			<input type="submit">
 		</form></td>
 	  </tr>
@@ -56,8 +56,8 @@
 		<td>Soil moisture</td>
 		<td><img src='{{graph["soil"]}}' alt="Graph cannot be displayed"></td>
 		<td>{{box.soil}}</td>
-		<td><form>
-			<input type="text" name="" id="", value="{{random()}}">
+		<td><form action='/update_warning/{{box.box}}/soil' method="POST">
+			<input type="text" name="soil" id="soil" value="{{random()}}">
 			<input type="submit">
 		</form></td>
 	  </tr>
@@ -66,8 +66,8 @@
 		<td>Light level</td>
 		<td><img src='{{graph["light"]}}' alt="Graph cannot be displayed"></td>
 		<td>{{box.light}}</td>
-		<td><form>
-			<input type="text" name="" id="", value="{{random()}}">
+		<td><form action='/update_warning/{{box.box}}/light' method="POST">
+			<input type="text" name="light" id="light" value="{{random()}}">
 			<input type="submit">
 		</form></td>
 	  </tr>

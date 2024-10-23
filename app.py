@@ -104,12 +104,32 @@ app.jinja_env.globals.update(publish=publish)
 ####################################
 ####################################
 ####################################
+import sys
+
+sys.path.append(r'.\secrets')
+from IP import IP#fix import
+import paho.mqtt.publish as publish
+
+def update_warning_MQTT(box,sensor,limit):
+    #functional
+    counter=1#make this time or something?
+    if sensor =='temperature':
+        code=9000
+    elif sensor =='humidity':
+        code=9001
+    elif sensor =='soil':
+        code=9002
+    elif sensor =='light':
+        code=9003
+    publish.single(f"{box}/inputs", f"{code};{limit};{counter};", hostname=IP)#can we replace with "localhost" when running on the instance?
+    #raise NotImplementedError
 
 ####still need to finish html, only temp is done
 @app.route('/update_warning/<int:box>/<string:sensor>',methods=['POST', 'GET'])
 def update_warning(box,sensor):
     limit = request.form[sensor]
-    print(box,sensor,limit)
+    print('\n\n',box,sensor,limit,'\n\n')
+    update_warning_MQTT(box,sensor,limit)
     #send MQTT to topic f'{box}/{sensor}/{limit}' etc
     return redirect('/')
 
@@ -167,8 +187,12 @@ def do_something():
 
 if __name__ == "__main__":
     app.run(debug=True)
+    #app.run(host='192.168.0.108',port=5000,debug=True)
+    #ipconfig to find ip
+    #to connect, use 192.168.0.108:5000
 
 
 '''
 How would I make a button call some python script?
+probaby like the do_something route
 '''
