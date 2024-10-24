@@ -67,7 +67,7 @@ def generate_graphs(lower_xlim):#should change this default...
             for sensor in sensors.keys():
                 plt.figure(figsize=(5, 1))#must go first
 
-                plt.plot(time,sensors[sensor])
+                plt.scatter(time,sensors[sensor],s=2)
                 #plt.xlim(),plt.xlabel(),plt.ylabel(), plt.title()#rewrite to use figure so we can change the size
                 
                 #how to only set lower limit for xlim
@@ -138,16 +138,20 @@ def create_plt(y,x):
     return plt
 
 graph_xlim=datetime.now()-timedelta(hours=1)##this is a bad way of dealing wiht this, you should use session (cookie)
-@app.route('/regen_graph/<int:xlim>')
+@app.route('/regen_graph/<xlim>')
 def regen_graph(xlim):
     global graph_xlim
-    if xlim == 0:       
+    if xlim == 'minute':       
+        graph_xlim= datetime.now()-timedelta(minutes=1)
+    if xlim == '0.5':       
+        graph_xlim= datetime.now()-timedelta(minutes=30)
+    if xlim == '1':       
         graph_xlim= datetime.now()-timedelta(hours=1)
-    elif xlim==1:
+    elif xlim=='6':
         graph_xlim = datetime.now()-timedelta(hours=6)
-    elif xlim==2:
+    elif xlim=='12':
         graph_xlim = datetime.now()-timedelta(hours=12)
-    elif xlim==3:
+    elif xlim=='24':
         graph_xlim = datetime.now()-timedelta(hours=24)
 
     

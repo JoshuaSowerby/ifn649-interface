@@ -2,7 +2,7 @@ import sys
 #sys.path.append(r'.\secrets')
 import paho.mqtt.client as mqtt
 #from IP import IP
-boxid=1#import
+boxid=0#import
 from app import *
 
 def on_connect(client, userdata, flags, rc): #func for making connection
@@ -21,8 +21,8 @@ def on_message(client, userdata, msg): #func for sending message
         box=input[0]
         temp=input[1]
         humid=input[2]
-        light=input[3]
-        soil=input[4]
+        soil=input[3]
+        light=input[4]
         new_datum = Data(box=box, temperature=temp,humidity=humid,light=light,soil=soil)
         try:
             db.session.add(new_datum)
